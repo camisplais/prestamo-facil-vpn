@@ -175,6 +175,7 @@ export interface DistributorAccountForm {
   email: string;
   password: string;
   password_confirmation: string;
+  credit_limit: number;
 }
 
 export interface IncentivePointValue {

@@ -106,6 +106,7 @@ import { PaginationControlsComponent } from '../../../shared/components/paginati
                       }
                     </td>
                     <td class="px-5 py-3 text-[#6B7280]">{{ formatMoney(item.credit?.credit_limit) }}</td>
+                    <td class="px-5 py-3 text-[#6B7280]">{{ formatMoney(item.credit?.available_credit) }}</td>
                     <td class="px-5 py-3">
                       <span
                         [class]="statusBadgeClass(item)"
@@ -135,7 +136,7 @@ import { PaginationControlsComponent } from '../../../shared/components/paginati
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="8" class="px-5 py-12 text-center text-[#6B7280] text-[13px]">No se encontraron distribuidoras.</td>
+                    <td colspan="9" class="px-5 py-12 text-center text-[#6B7280] text-[13px]">No se encontraron distribuidoras.</td>
                   </tr>
                 }
               </tbody>
@@ -200,12 +201,11 @@ import { PaginationControlsComponent } from '../../../shared/components/paginati
                   @if (isInvalid('category_id')) { <span class="text-[11px] text-[#E53935]">Selecciona una categoría.</span> }
                 </div>
                 <div class="flex flex-col gap-1">
-                  <label class="text-[12px] font-semibold text-[#1A1A2E]" for="d-credit">Límite de crédito *</label>
-                  <input id="d-credit" formControlName="credit_limit" type="number" min="0" step="0.01" placeholder="0"
-                    class="border border-[#E0E0E0] rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#003399] transition-colors"
-                    [class.border-[#E53935]]="isInvalid('credit_limit')"
+                  <label class="text-[12px] font-semibold text-[#1A1A2E]" for="d-credit">Límite de crédito</label>
+                  <input id="d-credit" type="text" disabled
+                    [value]="formatMoney(selectedDistributor()?.credit?.credit_limit)"
+                    class="border border-[#E0E0E0] rounded-lg px-3 py-2 text-[13px] bg-[#F8FAFD] text-[#6B7280]"
                   />
-                  @if (isInvalid('credit_limit')) { <span class="text-[11px] text-[#E53935]">{{ errMsg('credit_limit', 'Límite de crédito') }}</span> }
                 </div>
               </div>
             </section>
@@ -306,6 +306,14 @@ import { PaginationControlsComponent } from '../../../shared/components/paginati
               <p class="text-[12px] text-[#6B7280] mb-3">Se creará la cuenta para {{ selectedDistributor() ? fullName(selectedDistributor()!) : 'la distribuidora seleccionada' }}.</p>
               <div class="grid grid-cols-1 gap-3">
                 <div class="flex flex-col gap-1">
+                  <label class="text-[12px] font-semibold text-[#1A1A2E]" for="acc-credit">Límite de crédito *</label>
+                  <input id="acc-credit" formControlName="credit_limit" type="number" min="0" step="0.01" placeholder="0.00"
+                    class="border border-[#E0E0E0] rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#003399] transition-colors"
+                    [class.border-[#E53935]]="isAccountInvalid('credit_limit')"
+                  />
+                  @if (isAccountInvalid('credit_limit')) { <span class="text-[11px] text-[#E53935]">{{ errAccountMsg('credit_limit', 'Límite de crédito') }}</span> }
+                </div>
+                <div class="flex flex-col gap-1">
                   <label class="text-[12px] font-semibold text-[#1A1A2E]" for="acc-email">Correo electrónico *</label>
                   <input id="acc-email" formControlName="email" type="email" placeholder="correo@ejemplo.com"
                     class="border border-[#E0E0E0] rounded-lg px-3 py-2 text-[13px] outline-none focus:border-[#003399] transition-colors"
@@ -372,7 +380,7 @@ export class DistributorsComponent implements OnInit {
   query = signal('');
   pagination = signal({ current_page: 1, last_page: 1, per_page: 15, total: 0, from: 0, to: 0 });
 
-  headers = ['Nombre', 'Correo', 'CURP', 'Puntos', 'Categoría', 'Crédito', 'Estado', 'Acciones'];
+  headers = ['Nombre', 'Correo', 'CURP', 'Puntos', 'Categoría', 'Límite de crédito', 'Crédito disponible', 'Estado', 'Acciones'];
 
   totalCount    = computed(() => this.pagination().total || this.items().length);
   activeCount   = computed(() => this.items().filter(item => item.status).length);
@@ -405,7 +413,6 @@ export class DistributorsComponent implements OnInit {
 
   form = this.fb.group({
     category_id: [null as number | null, [Validators.required]],
-    credit_limit: [0, [Validators.required, Validators.min(0)]],
     credit_bureau_hit: [null as boolean | null],
   });
 
@@ -413,6 +420,7 @@ export class DistributorsComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, strongPasswordValidator()]],
     password_confirmation: ['', [Validators.required]],
+    credit_limit: [null as number | null, [Validators.required, Validators.min(0)]],
   }, { validators: passwordMatchValidator() });
 
   ngOnInit() {
@@ -456,7 +464,6 @@ export class DistributorsComponent implements OnInit {
     this.selectedDistributor.set(item);
     this.form.reset({
       category_id: item.category?.id ?? null,
-      credit_limit: Number(item.credit?.credit_limit ?? 0),
       credit_bureau_hit: item.creditBureauHit ?? null,
     });
     this.errorMsg.set('');
@@ -572,6 +579,7 @@ export class DistributorsComponent implements OnInit {
       email: formValue.email ?? '',
       password: formValue.password ?? '',
       password_confirmation: formValue.password_confirmation ?? '',
+      credit_limit: Number(formValue.credit_limit ?? 0),
     }).subscribe({
       next: () => {
         this.savingAccount.set(false);
@@ -595,7 +603,6 @@ export class DistributorsComponent implements OnInit {
   private buildPayload(value: any): Partial<DistributorForm> {
     const payload: Partial<DistributorForm> = {
       category_id: Number(value.category_id),
-      credit_limit: Number(value.credit_limit ?? 0),
     };
 
     if (value.credit_bureau_hit !== null && value.credit_bureau_hit !== undefined) {
@@ -685,7 +692,6 @@ export class DistributorsComponent implements OnInit {
   private fieldLabel(path: string) {
     const labels: Record<string, string> = {
       category_id: 'La categoría',
-      credit_limit: 'El límite de crédito',
       credit_bureau_hit: 'El buro de crédito',
     };
 
@@ -731,6 +737,7 @@ export class DistributorsComponent implements OnInit {
 
   private accountFieldLabel(path: string) {
     const labels: Record<string, string> = {
+      credit_limit: 'El límite de crédito',
       email: 'El correo electrónico',
       password: 'La contraseña',
       password_confirmation: 'La confirmación de contraseña',

@@ -170,7 +170,7 @@ type Tab = 'morosas' | 'pre-solicitudes' | 'saldo-cortes' | 'saldo-puntos';
                       <td class="px-5 py-3 font-semibold text-[#1A1A2E]">{{ m.nombre || '—' }}</td>
                       <td class="px-5 py-3 font-mono text-[12px] text-[#6B7280]">{{ m.curp || '—' }}</td>
                       <td class="px-5 py-3 text-[#6B7280]">{{ m.categoria || '—' }}</td>
-                      <td class="px-5 py-3 text-right font-semibold text-[#1A1A2E]">\${{ m.credito.current_credit | number:'1.2-2' }}</td>
+                      <td class="px-5 py-3 text-right font-semibold text-[#1A1A2E]">\${{ m.credito.current_credit - m.credito.available_credit | number:'1.2-2' }}</td>
                       <td class="px-5 py-3 text-right text-[#6B7280]">\${{ m.credito.available_credit | number:'1.2-2' }}</td>
                       <td class="px-5 py-3 text-right text-[#003399] font-semibold">\${{ m.credito.credit_limit | number:'1.2-2' }}</td>
                       <td class="px-5 py-3 text-center font-semibold text-[#FF8800]">{{ m.puntos }}</td>
@@ -495,7 +495,7 @@ type Tab = 'morosas' | 'pre-solicitudes' | 'saldo-cortes' | 'saldo-puntos';
                       <td class="px-4 py-3 text-center">
                         <span class="font-extrabold text-[#FF8800] text-[15px]">{{ p.puntos }}</span>
                       </td>
-                      <td class="px-4 py-3 text-right">\${{ p.current_credit | number:'1.2-2' }}</td>
+                      <td class="px-4 py-3 text-right">\${{ p.current_credit - p.available_credit | number:'1.2-2' }}</td>
                       <td class="px-4 py-3 text-right">\${{ p.available_credit | number:'1.2-2' }}</td>
                       <td class="px-4 py-3">
                         <span [class]="p.status ? 'bg-[#00A86B]/10 text-[#00A86B] border-[#00A86B]/20' : 'bg-[#E53935]/10 text-[#E53935] border-[#E53935]/20'"
@@ -557,7 +557,7 @@ export class ReportesComponent implements OnInit {
   headersMorosas = ['Nombre', 'CURP', 'Categoría', 'Crédito usado', 'Crédito disponible', 'Límite', 'Puntos', 'Estado', 'Buró revisado'];
   headersPreSolicitudes = ['Nombre', 'CURP', 'Coordinador', 'Verificador', 'Estado', 'Buró', 'Creada', 'Verificada'];
 
-  totalCreditoMorosas  = () => this.morosas().reduce((s, m) => s + m.credito.current_credit, 0);
+  totalCreditoMorosas  = () => this.morosas().reduce((s, m) => s + (m.credito.current_credit - m.credito.available_credit), 0);
   countMorosaInactivas = () => this.morosas().filter(m => !m.status).length;
   countPreByStatus     = (s: string) => this.preSolicitudes().filter(p => p.status === s).length;
 
@@ -603,7 +603,7 @@ export class ReportesComponent implements OnInit {
       headers = ['Nombre', 'CURP', 'RFC', 'Categoría', 'Crédito usado', 'Crédito disponible', 'Límite', 'Puntos', 'Estado', 'Buró revisado'];
       rows = this.morosas().map(m => [
         m.nombre, m.curp ?? '', m.rfc ?? '', m.categoria ?? '',
-        m.credito.current_credit, m.credito.available_credit, m.credito.credit_limit,
+        m.credito.current_credit - m.credito.available_credit, m.credito.available_credit, m.credito.credit_limit,
         m.puntos, m.status ? 'Activa' : 'Inactiva', this.formatDate(m.buro_revisado_en),
       ]);
       filename = 'distribuidoras-morosas';
@@ -628,7 +628,7 @@ export class ReportesComponent implements OnInit {
       headers = ['#', 'Nombre', 'Referencia', 'Categoría', 'Puntos', 'Crédito usado', 'Crédito disponible', 'Estado'];
       rows = this.saldoPuntos().map((p, i) => [
         i + 1, p.nombre, p.reference_number ?? '', p.categoria ?? '',
-        p.puntos, p.current_credit, p.available_credit, p.status ? 'Activa' : 'Inactiva',
+        p.puntos, p.current_credit - p.available_credit, p.available_credit, p.status ? 'Activa' : 'Inactiva',
       ]);
       filename = 'puntos-distribuidoras';
     }
@@ -653,7 +653,7 @@ export class ReportesComponent implements OnInit {
       const trs = this.morosas().map(m => `<tr>
         <td>${m.nombre}</td><td>${m.curp ?? ''}</td><td>${m.rfc ?? ''}</td>
         <td>${m.categoria ?? ''}</td>
-        <td class="num">$${m.credito.current_credit.toFixed(2)}</td>
+        <td class="num">$${(m.credito.current_credit - m.credito.available_credit).toFixed(2)}</td>
         <td class="num">$${m.credito.available_credit.toFixed(2)}</td>
         <td class="num">$${m.credito.credit_limit.toFixed(2)}</td>
         <td class="num">${m.puntos}</td>
@@ -697,7 +697,7 @@ export class ReportesComponent implements OnInit {
         <td class="num">${i + 1}</td>
         <td>${p.nombre}</td><td>${p.reference_number ?? ''}</td><td>${p.categoria ?? ''}</td>
         <td class="num">${p.puntos}</td>
-        <td class="num">$${p.current_credit.toFixed(2)}</td>
+        <td class="num">$${(p.current_credit - p.available_credit).toFixed(2)}</td>
         <td class="num">$${p.available_credit.toFixed(2)}</td>
         <td>${p.status ? 'Activa' : 'Inactiva'}</td>
       </tr>`).join('');
