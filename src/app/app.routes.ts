@@ -366,6 +366,11 @@ export const routes: Routes = [
         import('./features/cajera/reclamos/cajera-reclamo-detail.component').then(m => m.CajeraReclamoDetailComponent),
     },
     {
+      path: 'vales/:id',
+      loadComponent: () =>
+        import('./features/cajera/vales-cajera/vales-cajera.component').then(m => m.ValesCajeraComponent),
+    },
+    {
       path: 'vales',
       loadComponent: () =>
         import('./features/cajera/vales-cajera/vales-cajera.component').then(m => m.ValesCajeraComponent),
@@ -414,6 +419,11 @@ export const routes: Routes = [
       path: 'mis-pagos',
       loadComponent: () =>
         import('./features/distribuidora/mis-pagos/mis-pagos.component').then(m => m.MisPagosComponent),
+    },
+     {
+      path: 'mis-relaciones',
+      loadComponent: () =>
+        import('./features/distribuidora/mis-relaciones/mis-relaciones.component').then(m => m.MisRelacionesComponent),
     },
     {
       path: 'vales/:id',

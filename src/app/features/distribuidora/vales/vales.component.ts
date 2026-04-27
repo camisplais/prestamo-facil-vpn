@@ -129,7 +129,7 @@ import { environment } from '../../../../environments/environment';
                       <div class="flex items-center gap-1">
                         <!-- 👇 Botón ver pagos: solo habilitado si cashed u on_hold -->
                         <button (click)="goToDetail(v)"
-                          [disabled]="v.status !== 'cashed' && v.status !== 'on_hold'"
+                          [disabled]="v.status !== 'cashed' && v.status !== 'on_hold' && v.status !== 'paid_off'"
                           [title]="v.status === 'cashed' || v.status === 'on_hold' ? 'Ver pagos' : 'Solo disponible cuando el vale esté activo (cashed)'"
                           class="p-1.5 rounded-lg text-[#003399] hover:bg-[#003399]/10 transition-colors border-0 cursor-pointer bg-transparent disabled:opacity-30 disabled:cursor-not-allowed"
                         >
@@ -406,7 +406,8 @@ export class ValesComponent implements OnInit {
 
   // ── Helpers ─────────────────────────────────────────────────
   canViewDetail(v: any): boolean {
-    return v.status === 'cashed' || v.status === 'on_hold';
+    // Permite ver detalles si el status es cashed, on_hold, paid_off o paidoff
+    return v.status === 'cashed' || v.status === 'on_hold' || v.status === 'paid_off' || v.status === 'paidoff';
   }
 
   // ── Lifecycle ───────────────────────────────────────────────
@@ -425,8 +426,6 @@ export class ValesComponent implements OnInit {
         this.loading.set(false);
       },
       error: err => {
-        console.error('Status:', err.status);
-        console.error('Error body:', err.error);
         this.loading.set(false);
       },
     });
@@ -468,8 +467,6 @@ export class ValesComponent implements OnInit {
         this.loadingCustomers.set(false);
       },
       error: err => {
-        console.error('Status:', err.status);
-        console.error('Error body:', err.error);
         this.eligibleCustomers.set([]);
         this.loadingCustomers.set(false);
       },
@@ -484,8 +481,6 @@ export class ValesComponent implements OnInit {
         this.loadingProducts.set(false);
       },
       error: err => {
-        console.error('Status:', err.status);
-        console.error('Error body:', err.error);
         this.availableProducts.set([]);
         this.loadingProducts.set(false);
         if (err?.error?.message) {
@@ -518,10 +513,8 @@ export class ValesComponent implements OnInit {
         this.load();
       },
       error: err => {
-        console.error('Status:', err.status);
-        console.error('Error body:', err.error);
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al crear el vale.');
+        this.errorMsg.set(err?.error?.message ?? 'Error interno del servidor.');
       },
     });
   }
@@ -541,8 +534,6 @@ export class ValesComponent implements OnInit {
         this.load();
       },
       error: err => {
-        console.error('Status:', err.status);
-        console.error('Error body:', err.error);
         alert(err?.error?.message ?? 'No se pudo cancelar el vale.');
       },
     });

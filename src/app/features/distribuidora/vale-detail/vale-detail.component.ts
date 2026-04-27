@@ -335,14 +335,13 @@ export class ValeDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: err => {
-        console.error('=== LOAD DETAILS ERROR ===', err);
         this.loading.set(false);
       },
     });
   }
 
   goBack() {
-    this.router.navigate(['/distribuidora/loan']);
+    this.router.navigate(['/distribuidora/vales']);
   }
 
   goToPage(p: number) { this.currentPage.set(Math.max(1, Math.min(p, this.totalPages()))); }
@@ -381,9 +380,8 @@ export class ValeDetailComponent implements OnInit {
         setTimeout(() => this.closeModal(), 1500);
       },
       error: err => {
-        console.error('=== SUBMIT PAYMENT ERROR ===', err);
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al registrar el pago.');
+        this.errorMsg.set(err?.error?.message ?? 'Error interno del servidor.');
       },
     });
   }

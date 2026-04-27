@@ -928,17 +928,6 @@ export class ClientesComponent implements OnInit {
       
       error: err => {
   this.saving.set(false);
-
-  console.group('❌ Error 500 detalle:');
-  console.log('Status:', err.status);
-  console.log('Message:', err.error?.message);
-  console.log('Errors:', err.error?.errors);
-  console.log('Exception:', err.error?.exception);
-  console.log('File:', err.error?.file);
-  console.log('Line:', err.error?.line);
-  console.log('Trace:', err.error?.trace);
-  console.groupEnd();
-
   const errors = err?.error?.errors;
   if (errors) {
     // Muestra TODOS los errores de validación, no solo el primero
@@ -948,7 +937,7 @@ export class ClientesComponent implements OnInit {
     this.errorMsg.set(allErrors);
   } else {
     this.errorMsg.set(
-      err?.error?.message ?? 'Error interno del servidor (500). Revisa la consola para más detalles.'
+      err?.error?.message ?? 'Error interno del servidor (500)'
     );
   }
 },
@@ -1001,7 +990,7 @@ export class ClientesComponent implements OnInit {
         this.load();
       },
       error: err => {
-        alert(err?.error?.message ?? 'No se pudo cambiar el estado.');
+        alert(err?.error?.message ?? 'Error interno del Servidor');
       },
     });
   }

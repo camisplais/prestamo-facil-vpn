@@ -195,16 +195,13 @@ export class IncentivosComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('=== IncentivosComponent INIT ===');
     this.load();
   }
 
   private load() {
-    console.log('=== CALLING API:', this.API);
     this.loading.set(true);
     this.http.get<any>(this.API).subscribe({
       next: res => {
-        console.log('=== API RESPONSE:', res);
         this.incentiveData.set(res.data ?? null);
         this.pointValue.set(res.point_value ?? null);
         this.loading.set(false);
@@ -243,14 +240,7 @@ export class IncentivosComponent implements OnInit {
       },*/
           error: err => {
       this.saving.set(false);
-      
-      // 👇 Agrega esto para ver TODO el error en consola
-      console.error('=== HTTP ERROR ===');
-      console.error('Status:', err.status);
-      console.error('Error body:', err.error);
-      console.error('Full error:', err);
-
-      const msg = err?.error?.message ?? 'Error al guardar.';
+      const msg = err?.error?.message ?? 'Error al interno del servidor.';
       const errors = err?.error?.errors;
       if (errors) {
         const first = Object.values(errors).flat()[0];

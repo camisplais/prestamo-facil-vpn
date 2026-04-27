@@ -347,14 +347,6 @@ export class PuntosCajeraComponent implements OnInit {
         this.loading.set(false);
       },
       error: err => {
-        console.error('═══════════════ HTTP ERROR ═══════════════');
-        console.error('Status:',        err.status);
-        console.error('Status text:',   err.statusText);
-        console.error('URL:',           err.url);
-        console.error('Error body:',    err.error);
-        console.error('Message:',       err.message);
-        console.error('Full error:',    err);
-        console.error('══════════════════════════════════════════');
         this.loading.set(false);
       },
     });
@@ -368,6 +360,7 @@ export class PuntosCajeraComponent implements OnInit {
     this.screen.set('detalle');
   }
 
+  
   // ── Autorizar ────────────────────────────────────────────────
   autorizarSolicitud() {
     if (!confirm('¿Confirmas la autorización de esta solicitud de canje?')) return;
@@ -386,14 +379,10 @@ export class PuntosCajeraComponent implements OnInit {
         this.selectedSolicitud.set({ ...this.selectedSolicitud(), status: 'authorized' });
       },
       error: err => {
-        console.error('═══════════════ HTTP ERROR ═══════════════');
-        console.error('Status:',        err.status);
-        console.error('Status text:',   err.statusText);
-        console.error('URL:',           err.url);
-        console.error('Error body:',    err.error);
-        console.error('Message:',       err.message);
-        console.error('Full error:',    err);
-        console.error('══════════════════════════════════════════');
+
+         
+        this.actionLoading.set(false); // ← estaba faltando esto también
+        this.actionError.set(err?.error?.message ?? `Error interno del servidor.`);
         this.loading.set(false);
       },
     });
@@ -468,14 +457,9 @@ export class PuntosCajeraComponent implements OnInit {
         setTimeout(() => this.closeTransferModal(), 2000);
       },
       error: err => {
-        console.error('═══════════════ HTTP ERROR ═══════════════');
-        console.error('Status:',        err.status);
-        console.error('Status text:',   err.statusText);
-        console.error('URL:',           err.url);
-        console.error('Error body:',    err.error);
-        console.error('Message:',       err.message);
-        console.error('Full error:',    err);
-        console.error('══════════════════════════════════════════');
+
+        this.transferLoading.set(false); // ← estaba faltando esto también
+        this.transferError.set(err?.error?.message ?? `Error interno del servidor.`);
         this.loading.set(false);
       },
     });

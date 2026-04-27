@@ -1,13 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-distribuidora-shell',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, UserMenuComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, UserMenuComponent, DatePipe, DecimalPipe],
   template: `
     <div class="flex h-screen overflow-hidden bg-[#F4F7FA]">
 
@@ -62,6 +65,12 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
         </svg>
         @if (!collapsed()) { <span class="text-[13px] font-medium whitespace-nowrap">Mis Pagos</span> }
       </a>
+      <a routerLink="/distribuidora/mis-relaciones" routerLinkActive="bg-[#FF8800] text-white" [routerLinkActiveOptions]="{ exact: true }" (click)="collapsed.set(true)" class="flex items-center gap-3 px-[18px] py-[9px] mx-2 my-0.5 rounded-lg cursor-pointer transition-all text-white/70 no-underline hover:bg-white/10 hover:text-white">
+        <svg class="w-[18px] h-[18px] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        @if (!collapsed()) { <span class="text-[13px] font-medium whitespace-nowrap">Mis Relaciones</span> }
+      </a>
       <a routerLink="/distribuidora/reclamos" routerLinkActive="bg-[#FF8800] text-white" [routerLinkActiveOptions]="{ exact: true }" (click)="collapsed.set(true)" class="flex items-center gap-3 px-[18px] py-[9px] mx-2 my-0.5 rounded-lg cursor-pointer transition-all text-white/70 no-underline hover:bg-white/10 hover:text-white">
         <svg class="w-[18px] h-[18px] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
         @if (!collapsed()) { <span class="text-[13px] font-medium whitespace-nowrap">Reclamos</span> }
@@ -98,13 +107,46 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
       <app-user-menu />
     </header>
     <main class="flex-1 overflow-y-auto p-4 md:p-7">
+
+      <!-- Banner referencia actual -->
+      @if (bannerRef()) {
+        <div class="mb-4 bg-gradient-to-r from-[#003399] to-[#0044CC] rounded-[10px] p-4 flex items-center justify-between flex-wrap gap-3 shadow-[0_2px_12px_rgba(0,51,153,0.15)]">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-white text-[13px] font-semibold">Referencia: <span class="font-mono">{{ bannerRef()!.referencia }}</span></p>
+              <p class="text-white/70 text-[11px] mt-0.5">Periodo: {{ bannerRef()!.fecha_inicio | date:'dd/MM/yyyy' }} — {{ bannerRef()!.fecha_fin | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-white/70 text-[11px]">Total a pagar</p>
+            <p class="text-white text-[16px] font-extrabold">\${{ bannerRef()!.pago_esperado | number:'1.2-2' }}</p>
+          </div>
+        </div>
+      }
+
       <router-outlet/>
     </main>
   </div>
 </div>
   `,
 })
-export class DistribuidoraShellComponent {
+export class DistribuidoraShellComponent implements OnInit {
   protected auth = inject(AuthService);
+  private http = inject(HttpClient);
   collapsed = signal(false);
+  bannerRef = signal<any>(null);
+
+  private readonly API = `${environment.apiUrl}/distribuidora`;
+
+  ngOnInit() {
+    this.http.get<any>(`${this.API}/referencias/banner`).subscribe({
+      next: res => this.bannerRef.set(res.data ?? null),
+      error: () => this.bannerRef.set(null),
+    });
+  }
 }
