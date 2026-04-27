@@ -17,6 +17,16 @@ import { MyPaymentsSummary, Reconciliation } from '../../../core/models';
       <div class="mb-6">
         <h1 class="font-[Montserrat] text-[22px] font-extrabold text-[#1A1A2E]">Mis Pagos</h1>
         <p class="text-[13px] text-[#6B7280] mt-0.5">Resumen de tu cuenta e historial de conciliaciones</p>
+        @if (summary()) {
+          <div class="mt-3 flex items-center gap-3 flex-wrap">
+            <span class="text-[12px] font-bold bg-[#003399]/10 text-[#003399] px-3 py-1 rounded-full">
+              Ref: {{ summary()!.referencia }}
+            </span>
+            <span class="text-[12px] text-[#6B7280]">
+              Vence: {{ fmtDate(summary()!.next_payment_date) }}
+            </span>
+          </div>
+        }
       </div>
 
       @if (loading()) {
@@ -134,15 +144,31 @@ export class MisPagosComponent implements OnInit {
   }
 
   summaryItems() {
-    const s = this.summary();
-    if (!s) return [];
-    return [
-      { label: 'Total', value: this.fmt(s.total_biweekly), colorClass: 'text-[#1A1A2E]' },
-      { label: 'Próximo', value: this.fmt(s.next_expected), colorClass: 'text-[#1A1A2E]' },
-      { label: 'Deuda', value: s.current_debt > 0 ? this.fmt(s.current_debt) : '$0.00', colorClass: s.current_debt > 0 ? 'text-[#E53935]' : 'text-[#00A86B]' },
-      { label: 'A favor', value: s.current_over_payment > 0 ? this.fmt(s.current_over_payment) : '$0.00', colorClass: s.current_over_payment > 0 ? 'text-[#00A86B]' : 'text-[#1A1A2E]' }
-    ];
-  }
+  const s = this.summary();
+  if (!s) return [];
+  return [
+    { 
+      label: 'Pago esperado', 
+      value: this.fmt(s.pago_esperado), 
+      colorClass: 'text-[#1A1A2E]' 
+    },
+    { 
+      label: 'Ya pagado', 
+      value: this.fmt(s.pago_total), 
+      colorClass: 'text-[#00A86B]' 
+    },
+    { 
+      label: 'Pendiente', 
+      value: s.pendiente > 0 ? this.fmt(s.pendiente) : '$0.00', 
+      colorClass: s.pendiente > 0 ? 'text-[#E53935]' : 'text-[#00A86B]' 
+    },
+    { 
+      label: 'Deuda anterior', 
+      value: s.current_debt > 0 ? this.fmt(s.current_debt) : '$0.00', 
+      colorClass: s.current_debt > 0 ? 'text-[#E53935]' : 'text-[#00A86B]' 
+    },
+  ];
+}
 
   fmt = (v: number) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(v ?? 0);
   fmtDate = (d: string) => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '—';

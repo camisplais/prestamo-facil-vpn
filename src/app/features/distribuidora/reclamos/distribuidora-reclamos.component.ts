@@ -117,7 +117,7 @@ import { Reclamo } from '../../../core/models';
                   <span class="text-[11px] text-[#6B7280]">{{ formatDate(item.created_at) }}</span>
                 </div>
                 <div>
-                  <div class="text-[11px] text-[#9CA3AF] uppercase font-bold tracking-wider">Referencia</div>
+                  <div class="text-[11px] text-[#9CA3AF] uppercase font-bold tracking-wider">No.Distribuidora</div>
                   <div class="text-[13px] font-mono text-[#1A1A2E]">{{ item.reference_number || '—' }}</div>
                 </div>
                 <div>
@@ -219,7 +219,7 @@ export class DistribuidoraReclamosComponent implements OnInit {
   lastPage    = signal(1);
   total       = signal(0);
 
-  headers = ['Tipo', 'Referencia', 'Comentarios', 'Estado', 'Fecha'];
+  headers = ['Tipo', 'No.Distribuidora', 'Comentarios', 'Estado', 'Fecha'];
 
   // Muestra página actual ± 1, siempre primero y último, con "…" entre medios
   visiblePages = computed(() => {

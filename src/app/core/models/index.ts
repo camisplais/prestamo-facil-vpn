@@ -445,11 +445,13 @@ export interface FinalCustomer {
 
 // --- My Payments (Distribuidora) ---------------------------------------------
 export interface MyPaymentsSummary {
-  total_biweekly: number;
-  current_debt: number;
-  current_over_payment: number;
-  next_payment_date: string;
-  next_expected: number;
+   pago_esperado:        number;  // lo que debe pagar esta quincena
+    pago_total:           number;  // lo que ya pagó
+    pendiente:            number;  // lo que falta
+    current_debt:         number;
+    current_over_payment: number;
+    next_payment_date:    string;
+    referencia:           string;
 }
 
 export interface MyPaymentsPagination {
